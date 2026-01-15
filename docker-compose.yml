@@ -1,0 +1,107 @@
+services:
+  mongodb:
+    image: mongo:7
+    container_name: niro-mongo
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - app_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: niro-redis
+    ports:
+      - "3697:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app_network
+
+  neo4j:
+    image: neo4j:5.20
+    container_name: niro-neo4j
+    environment:
+      - NEO4J_AUTH=${NEO4J_USERNAME}/${NEO4J_PASSWORD}
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+      - neo4j_conf:/conf
+      - neo4j_plugins:/plugins
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    networks:
+      - app_network
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: niro-qdrant
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    networks:
+      - app_network
+
+  ast-parser:
+    image: ghcr.io/esnisquare/niro-ast-parser:${AST_PARSER_TAG}
+    container_name: niro-ast-parser
+    env_file:
+      - .env
+    environment:
+      - AST_PARSER_PORT=${AST_PARSER_PORT}
+    ports:
+      - "${AST_PARSER_PORT}:${AST_PARSER_PORT}"
+    networks:
+      - app_network
+
+  ai-orchestrator:
+    image: ghcr.io/esnisquare/niro-orchestrator:${AI_ORCHESTRATOR_TAG}
+    container_name: niro-ai-orchestrator
+    env_file:
+      - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - AIO_SERVER_PORT=${AIO_SERVER_PORT}
+      - GIT_REPOSITORIES_BASE_PATH=${GIT_REPOSITORIES_BASE_PATH}
+    volumes:
+      - ./data/git-repos:/data/git-repos
+    ports:
+      - "${AIO_SERVER_PORT}:${AIO_SERVER_PORT}"
+    depends_on:
+      - mongodb
+      - redis
+      - neo4j
+      - qdrant
+      - ast-parser
+    networks:
+      - app_network
+
+  frontend:
+    image: ghcr.io/esnisquare/niro-frontend:${FRONTEND_TAG}
+    container_name: niro-frontend
+    ports:
+      - "8089:8089"
+    depends_on:
+      - ai-orchestrator
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  redis_data:
+  neo4j_data:
+  neo4j_logs:
+  neo4j_conf:
+  neo4j_plugins:
+  qdrant_storage:
