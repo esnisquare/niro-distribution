@@ -40,7 +40,19 @@ if [ -f ".env.custom" ]; then
 fi
 
 # Check if NIRO_LOCAL_WORKSPACE is set and not empty
-if [ -z "${NIRO_LOCAL_WORKSPACE:-}" ]; then
+if [ -n "${NIRO_LOCAL_WORKSPACE:-}" ]; then
+  # Variable is already set - ensure it's stored in .env.custom
+  if [ ! -f ".env.custom" ] || ! grep -q "^NIRO_LOCAL_WORKSPACE=" .env.custom 2>/dev/null; then
+    # Create or append to .env.custom if it doesn't already contain the variable
+    if [ ! -f ".env.custom" ]; then
+      echo "NIRO_LOCAL_WORKSPACE=$NIRO_LOCAL_WORKSPACE" > .env.custom
+    else
+      echo "NIRO_LOCAL_WORKSPACE=$NIRO_LOCAL_WORKSPACE" >> .env.custom
+    fi
+    echo "Stored existing NIRO_LOCAL_WORKSPACE=$NIRO_LOCAL_WORKSPACE in .env.custom"
+  fi
+else
+  # Variable is not set - prompt user
   echo
   echo "NIRO_LOCAL_WORKSPACE is not set."
   echo "This should be the absolute path to the workspace directory where your projects are cloned."
