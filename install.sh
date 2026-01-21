@@ -31,6 +31,66 @@ if [ ! -f ".env" ]; then
   echo
 fi
 
+# Load .env.custom if it exists
+if [ -f ".env.custom" ]; then
+  echo "Loading .env.custom"
+  set -a
+  source .env.custom
+  set +a
+fi
+
+# Check if NIRO_LOCAL_WORKSPACE is set and not empty
+if [ -z "${NIRO_LOCAL_WORKSPACE:-}" ]; then
+  echo
+  echo "NIRO_LOCAL_WORKSPACE is not set."
+  echo "This should be the absolute path to the workspace directory where your projects are cloned."
+  echo "Example: /home/user/projects or /Users/username/workspace"
+  echo
+  
+  while true; do
+    read -p "Please enter the absolute path to your workspace: " workspace_path < /dev/tty
+    
+    # Remove trailing slashes
+    workspace_path=$(echo "$workspace_path" | sed 's:/*$::')
+    
+    # Check if it's an absolute path
+    if [[ "$workspace_path" != /* ]]; then
+      echo "Error: Please provide an absolute path (must start with /)"
+      continue
+    fi
+    
+    # Check if the directory exists
+    if [ ! -d "$workspace_path" ]; then
+      read -p "Directory does not exist. Create it? (y/n): " create_dir < /dev/tty
+      if [[ "$create_dir" =~ ^[Yy]$ ]]; then
+        mkdir -p "$workspace_path"
+        if [ $? -eq 0 ]; then
+          echo "Created directory: $workspace_path"
+          break
+        else
+          echo "Error: Failed to create directory. Please try again."
+          continue
+        fi
+      else
+        echo "Please enter a valid existing directory path."
+        continue
+      fi
+    else
+      break
+    fi
+  done
+  
+  # Create .env.custom file with the workspace path
+  echo "NIRO_LOCAL_WORKSPACE=$workspace_path" > .env.custom
+  echo "Created .env.custom with NIRO_LOCAL_WORKSPACE=$workspace_path"
+  
+  # Load the new .env.custom
+  set -a
+  source .env.custom
+  set +a
+  echo
+fi
+
 mkdir -p ./data/git-repos
 
 # Check docker

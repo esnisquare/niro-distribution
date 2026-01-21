@@ -44,6 +44,7 @@ services:
     container_name: niro-ast-parser
     env_file:
       - .env
+      - .env.custom
     environment:
       - AST_PARSER_PORT=${AST_PARSER_PORT}
     ports:
@@ -56,6 +57,7 @@ services:
     container_name: niro-ai-orchestrator
     env_file:
       - .env
+      - .env.custom
     environment:
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
       - AIO_SERVER_PORT=${AIO_SERVER_PORT}
@@ -63,7 +65,7 @@ services:
       - NIRO_WORKSPACE_ROOT=/workspace
     volumes:
       - ./data/git-repos:/data/git-repos
-      - ./workspace:/workspace
+      - ${NIRO_LOCAL_WORKSPACE}:/workspace
     ports:
       - "${AIO_SERVER_PORT}:${AIO_SERVER_PORT}"
     depends_on:
