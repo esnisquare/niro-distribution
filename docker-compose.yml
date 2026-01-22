@@ -22,7 +22,10 @@ services:
     image: neo4j:5.20
     container_name: niro-neo4j
     environment:
-      - NEO4J_AUTH=${NEO4J_USERNAME}/${NEO4J_PASSWORD}
+      - NEO4J_AUTH=${NIRO_NEO4J_USERNAME}/${NIRO_NEO4J_PASSWORD}
+    ports:
+      - 7687:7687
+      - 7474:7474
     volumes:
       - neo4j_data:/data
       - neo4j_logs:/logs
@@ -44,7 +47,6 @@ services:
     container_name: niro-ast-parser
     env_file:
       - .env
-      - .env.custom
     environment:
       - AST_PARSER_PORT=${AST_PARSER_PORT}
     ports:
@@ -57,12 +59,14 @@ services:
     container_name: niro-ai-orchestrator
     env_file:
       - .env
-      - .env.custom
     environment:
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
       - AIO_SERVER_PORT=${AIO_SERVER_PORT}
       - GIT_REPOSITORIES_BASE_PATH=${GIT_REPOSITORIES_BASE_PATH}
       - NIRO_WORKSPACE_ROOT=/workspace
+      - NEO4J_USERNAME=${NIRO_NEO4J_USERNAME}
+      - NEO4J_PASSWORD=${NIRO_NEO4J_PASSWORD}
+      - NEO4J_URI=${NIRO_NEO4J_URI}
     volumes:
       - ./data/git-repos:/data/git-repos
       - ${NIRO_LOCAL_WORKSPACE}:/workspace

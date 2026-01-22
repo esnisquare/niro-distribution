@@ -31,26 +31,42 @@ if [ ! -f ".env" ]; then
   echo
 fi
 
-# Load .env.custom if it exists
-if [ -f ".env.custom" ]; then
-  echo "Loading .env.custom"
+# Load .env to check for existing values
+if [ -f ".env" ]; then
   set -a
-  source .env.custom
+  source .env
   set +a
 fi
 
+# Function to set or update a variable in .env file
+set_env_var() {
+  local var_name="$1"
+  local var_value="$2"
+  
+  # Escape pipe character and backslashes in the value for sed (using | as delimiter)
+  local escaped_value=$(printf '%s\n' "$var_value" | sed 's/|/\\|/g; s/\\/\\\\/g')
+  
+  if grep -q "^${var_name}=" .env 2>/dev/null; then
+    # Variable exists - update it
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      # macOS uses different sed syntax
+      sed -i '' "s|^${var_name}=.*|${var_name}=${escaped_value}|" .env
+    else
+      # Linux sed syntax
+      sed -i "s|^${var_name}=.*|${var_name}=${escaped_value}|" .env
+    fi
+    echo "Updated ${var_name} in .env"
+  else
+    # Variable doesn't exist - append it
+    echo "${var_name}=${var_value}" >> .env
+    echo "Added ${var_name} to .env"
+  fi
+}
+
 # Check if NIRO_LOCAL_WORKSPACE is set and not empty
 if [ -n "${NIRO_LOCAL_WORKSPACE:-}" ]; then
-  # Variable is already set - ensure it's stored in .env.custom
-  if [ ! -f ".env.custom" ] || ! grep -q "^NIRO_LOCAL_WORKSPACE=" .env.custom 2>/dev/null; then
-    # Create or append to .env.custom if it doesn't already contain the variable
-    if [ ! -f ".env.custom" ]; then
-      echo "NIRO_LOCAL_WORKSPACE=$NIRO_LOCAL_WORKSPACE" > .env.custom
-    else
-      echo "NIRO_LOCAL_WORKSPACE=$NIRO_LOCAL_WORKSPACE" >> .env.custom
-    fi
-    echo "Stored existing NIRO_LOCAL_WORKSPACE=$NIRO_LOCAL_WORKSPACE in .env.custom"
-  fi
+  # Variable is already set - ensure it's stored in .env
+  set_env_var "NIRO_LOCAL_WORKSPACE" "$NIRO_LOCAL_WORKSPACE"
 else
   # Variable is not set - prompt user
   echo
@@ -92,13 +108,56 @@ else
     fi
   done
   
-  # Create .env.custom file with the workspace path
-  echo "NIRO_LOCAL_WORKSPACE=$workspace_path" > .env.custom
-  echo "Created .env.custom with NIRO_LOCAL_WORKSPACE=$workspace_path"
+  # Store the workspace path in .env
+  set_env_var "NIRO_LOCAL_WORKSPACE" "$workspace_path"
   
-  # Load the new .env.custom
+  # Reload .env to make the variable available
   set -a
-  source .env.custom
+  source .env
+  set +a
+  echo
+fi
+
+# Check if NIRO_API_KEY is set and not empty
+if [ -n "${NIRO_API_KEY:-}" ]; then
+  # Variable is already set - ensure it's stored in .env
+  set_env_var "NIRO_API_KEY" "$NIRO_API_KEY"
+else
+  # Variable is not set - prompt user
+  echo
+  echo "NIRO_API_KEY is not set."
+  echo "This API key is required to authenticate with the Niro services."
+  echo
+  
+  while true; do
+    read -p "Please enter your NIRO_API_KEY: " api_key < /dev/tty
+    
+    # Remove leading/trailing whitespace
+    api_key=$(echo "$api_key" | xargs)
+    
+    # Check if it's not empty
+    if [ -z "$api_key" ]; then
+      echo "Error: API key cannot be empty. Please try again."
+      continue
+    fi
+    
+    # Basic validation - check if it looks like a reasonable API key (at least 8 characters)
+    if [ ${#api_key} -lt 8 ]; then
+      read -p "API key seems too short. Continue anyway? (y/n): " confirm < /dev/tty
+      if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+        continue
+      fi
+    fi
+    
+    break
+  done
+  
+  # Store the API key in .env
+  set_env_var "NIRO_API_KEY" "$api_key"
+  
+  # Reload .env to make the variable available
+  set -a
+  source .env
   set +a
   echo
 fi
