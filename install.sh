@@ -183,7 +183,6 @@ docker compose up -d
 
 echo
 echo "Niro should be available at: http://localhost:8089"
-echo "ai-orchestrator: http://localhost:8095"
 echo
 
 # Try to open browser (best effort)
