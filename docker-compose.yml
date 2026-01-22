@@ -84,6 +84,11 @@ services:
   frontend:
     image: ghcr.io/esnisquare/niro-frontend:${FRONTEND_TAG}
     container_name: niro-frontend
+    env_file:
+      - .env
+    environment:
+      - VITE_API_BASE_URL=${NIRO_VITE_API_BASE_URL}
+      - VITE_FEEDBACK_API_URL=${NIRO_METRICS_BASE_URL}
     ports:
       - "8089:8089"
     depends_on:
