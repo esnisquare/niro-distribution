@@ -9,13 +9,12 @@ cd "$INSTALL_DIR"
 
 # If user ran curl|bash, we need to fetch the repo files:
 # We download docker-compose.yml + .env.example from the same repo that hosts this script.
-REPO_RAW_BASE="${REPO_RAW_BASE:https://raw.githubusercontent.com/esnisquare/niro-distribution/main}"
+REPO_RAW_BASE="${REPO_RAW_BASE:-https://raw.githubusercontent.com/esnisquare/niro-distribution/main}"
 
 fetch_if_missing() {
   local file="$1"
-  echo "$file"
   if [ ! -f "$file" ]; then
-    echo "Downloading $file"
+    echo "Downloading $REPO_RAW_BASE/$file"
     curl -fsSL "$REPO_RAW_BASE/$file" -o "$file"
   fi
 }
