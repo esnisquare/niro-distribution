@@ -40,49 +40,61 @@ This will:
 1. Create a directory at `~/niro`
 2. Download `docker-compose.yml` and `.env.example`
 3. Create `.env` if it does not exist
-4. Pull all Docker images
-5. Start the full Niro stack
+4. **Prompt you for configuration** (see below)
+5. Pull all Docker images
+6. Start the full Niro stack
 
 After startup, open:
 
 **http://localhost:8089**
 
+### Required Configuration
+
+During installation, you will be prompted for:
+
+#### 1. **Workspace Directory** (`NIRO_LOCAL_WORKSPACE`)
+- **What it is**: The absolute path to the directory where your projects/source code are stored
+- **Example**: `/home/username/projects` or `/Users/username/workspace`
+- **Purpose**: Niro will scan this directory to analyze your projects
+- **Where stored**: Saved in `~/niro/.env`
+
+#### 2. **NIRO API Key** (`NIRO_API_KEY`)
+- **What it is**: Authentication key required for Niro services
+- **Purpose**: Authenticates requests to AI services and project analysis
+- **Where stored**: Saved in `~/niro/.env`
+
+---
+
+## Starting Niro Again
+
+After the initial installation, you can start/restart Niro using any of these methods:
+
+### Option 1: Using Docker Compose directly
+```bash
+cd ~/niro
+docker compose up -d
+```
+
+### Option 2: Re-run the installer
+```bash
+cd ~/niro
+./install.sh
+```
+
 ---
 
 ## Configuration (`.env`)
 
-On first install, a file is created at:
+Configuration is stored in:
 
 ```
 ~/niro/.env
 ```
 
-You may edit this file **before or after** startup.
-
-Important variables include:
-
-```env
-# Image versions
-AI_ORCHESTRATOR_TAG=latest
-AST_PARSER_TAG=latest
-FRONTEND_TAG=latest
-
-# Ports
-AIO_SERVER_PORT=8095
-AST_PARSER_PORT=8210
-
-# MongoDB
-MONGO_ROOT_USERNAME=niro
-MONGO_ROOT_PASSWORD=change_me
-MONGODB_AIO_URI=mongodb://niro:change_me@mongodb:27017/ai?authSource=admin&retryWrites=false
-
-# Neo4j
-NEO4J_USERNAME=neo4j
-NEO4J_PASSWORD=change_me
-NEO4J_URI=bolt://neo4j:7687
-```
-
-**Change default passwords** if you are running this beyond local testing.
+**Key Settings:**
+- `NIRO_LOCAL_WORKSPACE`: Path to your workspace directory
+- `NIRO_API_KEY`: Your Niro API key
+- Database passwords and other service configurations
 
 ---
 
@@ -116,13 +128,20 @@ docker compose down -v
 
 ---
 
-## Re-running the Installer
+## Updating Configuration
 
-You can safely re-run the installer at any time:
+To change your workspace directory or API key:
 
-```bash
-./install.sh
-```
+1. **Edit the configuration file**:
+   ```bash
+   cd ~/niro
+   nano .env  # or use your preferred editor
+   ```
+
+2. **Restart the services**:
+   ```bash
+   docker compose restart
+   ```
 
 ---
 
