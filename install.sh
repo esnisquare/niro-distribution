@@ -11,16 +11,15 @@ cd "$INSTALL_DIR"
 # We download docker-compose.yml + .env.example from the same repo that hosts this script.
 REPO_RAW_BASE="${REPO_RAW_BASE:-https://raw.githubusercontent.com/esnisquare/niro-distribution/main}"
 
-fetch_if_missing() {
+fetch_latest() {
   local file="$1"
-  if [ ! -f "$file" ]; then
-    echo "Downloading $REPO_RAW_BASE/$file"
-    curl -fsSL "$REPO_RAW_BASE/$file" -o "$file"
-  fi
+  echo "Downloading $REPO_RAW_BASE/$file"
+  curl -fsSL "$REPO_RAW_BASE/$file" -o "$file"
 }
 
-fetch_if_missing "docker-compose.yml"
-fetch_if_missing ".env.example"
+# Always fetch latest docker-compose.yml and .env.example
+fetch_latest "docker-compose.yml"
+fetch_latest ".env.example"
 
 if [ ! -f ".env" ]; then
   echo "Creating .env from .env.example"
@@ -28,6 +27,17 @@ if [ ! -f ".env" ]; then
   echo
   echo "IMPORTANT: Please edit $INSTALL_DIR/.env and change passwords (MONGO_ROOT_PASSWORD, NEO4J_PASSWORD)."
   echo
+else
+  # Merge new variables from .env.example into .env (preserving existing values)
+  while IFS= read -r line; do
+    # Skip comments and blank lines
+    [[ "$line" =~ ^#.*$ || -z "$line" ]] && continue
+    var_name="${line%%=*}"
+    if ! grep -q "^${var_name}=" .env 2>/dev/null; then
+      echo "$line" >> .env
+      echo "Added new variable ${var_name} to .env"
+    fi
+  done < .env.example
 fi
 
 # Load .env to check for existing values
