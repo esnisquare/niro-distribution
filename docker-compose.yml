@@ -81,6 +81,32 @@ services:
     networks:
       - app_network
 
+  ai-assistant:
+    image: ghcr.io/esnisquare/niro-ai-assistant:${AI_ASSISTANT_TAG}
+    container_name: niro-ai-assistant
+    env_file:
+      - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - AI_ASSISTANT_PORT=${AI_ASSISTANT_PORT}
+      - GIT_REPOSITORIES_BASE_PATH=${GIT_REPOSITORIES_BASE_PATH}
+      - NIRO_WORKSPACE_ROOT=/workspace
+      - NEO4J_USERNAME=${NIRO_NEO4J_USERNAME}
+      - NEO4J_PASSWORD=${NIRO_NEO4J_PASSWORD}
+      - NEO4J_URI=${NIRO_NEO4J_URI}
+    volumes:
+      - ./data/git-repos:/data/git-repos
+      - ${NIRO_LOCAL_WORKSPACE}:/workspace
+    ports:
+      - "${AI_ASSISTANT_PORT}:${AI_ASSISTANT_PORT}"
+    depends_on:
+      - mongodb
+      - redis
+      - neo4j
+      - qdrant
+    networks:
+      - app_network
+
   frontend:
     image: ghcr.io/esnisquare/niro-frontend:${FRONTEND_TAG}
     container_name: niro-frontend
@@ -88,11 +114,13 @@ services:
       - .env
     environment:
       - VITE_API_BASE_URL=${NIRO_VITE_API_BASE_URL}
+      - VITE_AI_ASSISTANT_URL=${NIRO_VITE_AI_ASSISTANT_URL}
       - VITE_FEEDBACK_API_URL=${NIRO_METRICS_BASE_URL}/api/feedback
     ports:
       - "8089:8089"
     depends_on:
       - ai-orchestrator
+      - ai-assistant
     networks:
       - app_network
 

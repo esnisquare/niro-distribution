@@ -3,13 +3,14 @@
 This repository provides a **one-command installer** to run the Niro platform locally using Docker Compose.
 
 It pulls prebuilt images (no source code) and starts all required services:
-- Frontend (UI)
-- AI Orchestrator
-- AST Parser
-- MongoDB
-- Redis
-- Neo4j
-- Qdrant
+- **Frontend** – Web UI for interacting with Niro
+- **AI Orchestrator** – Core backend that coordinates project analysis, code indexing, and AI-driven workflows
+- **AI Assistant** – Conversational AI service for code-aware Q&A and assistance
+- **AST Parser** – Parses source code into abstract syntax trees for structural analysis
+- **MongoDB** – Primary datastore for projects, users, and application state
+- **Redis** – In-memory cache and message broker for inter-service communication
+- **Neo4j** – Graph database for storing and querying code relationships and dependencies
+- **Qdrant** – Vector database for semantic code search via embeddings
 
 ---
 
