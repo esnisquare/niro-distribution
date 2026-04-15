@@ -49,6 +49,8 @@ services:
       - .env
     environment:
       - AST_PARSER_PORT=${AST_PARSER_PORT}
+    volumes:
+      - ${NIRO_LOCAL_WORKSPACE}:/workspace
     ports:
       - "${AST_PARSER_PORT}:${AST_PARSER_PORT}"
     networks:
