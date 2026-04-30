@@ -192,7 +192,27 @@ echo "Starting services..."
 docker compose up -d
 
 echo
-echo "Niro should be available at: http://localhost:8089"
+echo "Waiting for services to start..."
+
+# Wait for ai-orchestrator to finish starting up (up to 3 minutes)
+TIMEOUT=180
+ELAPSED=0
+READY=false
+while [ $ELAPSED -lt $TIMEOUT ]; do
+  if docker logs niro-ai-orchestrator 2>&1 | grep -q "Tomcat started on port"; then
+    READY=true
+    break
+  fi
+  sleep 3
+  ELAPSED=$((ELAPSED + 3))
+done
+
+if [ "$READY" = false ]; then
+  echo "WARNING: Timed out waiting for ai-orchestrator to start. The UI may not be ready yet."
+fi
+
+echo
+echo "Niro is available at: http://localhost:8089"
 echo
 
 # Try to open browser (best effort)
