@@ -66,6 +66,19 @@ During installation, you will be prompted for:
 
 ---
 
+## Stopping Niro
+
+```bash
+docker compose down
+```
+
+To remove all data:
+```bash
+docker compose down -v
+```
+
+---
+
 ## Starting Niro Again
 
 After the initial installation, you can start/restart Niro using any of these methods:
@@ -116,18 +129,6 @@ This is expected Docker behaviour, not a bug.
 
 ---
 
-## Stopping Niro
-
-```bash
-docker compose down
-```
-
-To remove all data:
-```bash
-docker compose down -v
-```
-
----
 
 ## Updating Configuration
 
