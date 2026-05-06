@@ -63,6 +63,10 @@ During installation, you will be prompted for:
 - **What it is**: Authentication key required for Niro services
 - **Purpose**: Authenticates requests to AI services and project analysis
 - **Where stored**: Saved in `~/niro/.env`
+- **How to obtain**:
+  1. Register an account at [console.niroai.dev](https://console.niroai.dev)
+  2. Once logged in, look for **Self-hosted API Key** in the left panel
+  3. Copy the key and paste it when prompted during installation
 
 ---
 
@@ -107,7 +111,7 @@ Configuration is stored in:
 
 **Key Settings:**
 - `NIRO_LOCAL_WORKSPACE`: Path to your workspace directory
-- `NIRO_API_KEY`: Your Niro API key
+- `NIRO_API_KEY`: Your Niro API key — obtain from [console.niroai.dev](https://console.niroai.dev) → **Self-hosted API Key** in the left panel
 - Database passwords and other service configurations
 
 ---
